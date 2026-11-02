@@ -1,5 +1,8 @@
 # Buku Tamu Gastro — Webapp
 
+Panduan rilis ke live untuk Ko Indra:
+[Deploy dari Piemoul, konfigurasi env, migrasi tanpa mengubah data lama, dan rollback](docs/DEPLOY-LIVE-KO-INDRA.md).
+
 Aplikasi buku tamu untuk salesman Gastro pada acara **NFH**, **FHI**, dan **Gastro day Bali - Morreti X-perience**.
 Dibangun dengan Next.js 14 (App Router), Tailwind CSS, dan PostgreSQL (Neon) yang
 ter-deploy di Vercel.

@@ -1,0 +1,13 @@
+# CLI deployments use Vercel Production environment variables, never local secrets.
+.env
+.env.*
+.git
+.local-deployment
+.graphify
+node_modules
+.next
+data
+output
+tmp
+*.dump
+*.backup
