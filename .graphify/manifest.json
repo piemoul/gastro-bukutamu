@@ -1,0 +1,182 @@
+{
+  "next.config.mjs": {
+    "mtime": 1793610957216.3481,
+    "hash": "9d9964ee33c8e438b6f03b59b9a24e1d"
+  },
+  "package.json": {
+    "mtime": 1783353998.607491,
+    "hash": ""
+  },
+  "postcss.config.mjs": {
+    "mtime": 1793610957217.3518,
+    "hash": "254ced0b8d1fdca01a2d0413bc903356"
+  },
+  "scripts/seed.ts": {
+    "mtime": 1793614373846.7056,
+    "hash": "a730d94f7859f7d5a108da1c2342fe5d"
+  },
+  "src/app/admin/AdminClient.tsx": {
+    "mtime": 1793614865957.5454,
+    "hash": "9a15429333f1c13c16f81a650caecc7d"
+  },
+  "src/app/admin/page.tsx": {
+    "mtime": 1793613492248.405,
+    "hash": "dfc7b5ecf316846e5fcaf60cbaf366dd"
+  },
+  "src/app/api/admin/clients/route.ts": {
+    "mtime": 1793613364578.4785,
+    "hash": "779a6a8a2efa2cfcf249512e14fbfaa7"
+  },
+  "src/app/api/auth/login/route.ts": {
+    "mtime": 1793610957221.9592,
+    "hash": "a557bd00c31245d11e77d59607798045"
+  },
+  "src/app/api/auth/logout/route.ts": {
+    "mtime": 1793610957223.4666,
+    "hash": "17380a3e67c656b24e0286c6b2f2a4df"
+  },
+  "src/app/api/clients/[id]/route.ts": {
+    "mtime": 1793613364581.618,
+    "hash": "a5a512ba77b8355c4543c2da6d01f4a4"
+  },
+  "src/app/api/clients/route.ts": {
+    "mtime": 1793610957224.4758,
+    "hash": "33a82e27425b159e4dccfb05f5f7502a"
+  },
+  "src/app/api/export/route.ts": {
+    "mtime": 1793613364580.6108,
+    "hash": "7a748140c330faaa62b4ce86018d235f"
+  },
+  "src/app/dashboard/DashboardClient.tsx": {
+    "mtime": 1793614866035.7927,
+    "hash": "ee6361f5dbc9faaa8c109d896c18397d"
+  },
+  "src/app/dashboard/page.tsx": {
+    "mtime": 1793610957225.4768,
+    "hash": "14da14e240eff82f3f6b7e6700ffb8dc"
+  },
+  "src/app/layout.tsx": {
+    "mtime": 1793613941387.1643,
+    "hash": "f2af81453e05a5746148215a8ff7d01c"
+  },
+  "src/app/login/LoginForm.tsx": {
+    "mtime": 1793610957226.4756,
+    "hash": "39ce639f4b251b81a85c3a35fcf0ccc0"
+  },
+  "src/app/login/page.tsx": {
+    "mtime": 1793613879917.3303,
+    "hash": "c26196950ab0950e090db709864bb316"
+  },
+  "src/app/page.tsx": {
+    "mtime": 1793610957227.4763,
+    "hash": "3b815cbaeebafe34ed250e2c1bcd893d"
+  },
+  "src/lib/auth.ts": {
+    "mtime": 1793613993682.7063,
+    "hash": "6d0f397695d4cf591c429845c2eda809"
+  },
+  "src/lib/db.ts": {
+    "mtime": 1793613364577.4792,
+    "hash": "ee3fd2c267fef8b55376976929140dac"
+  },
+  "src/lib/events.ts": {
+    "mtime": 1793610957228.4763,
+    "hash": "e33200daa0b31204a8b7e56eaa305e74"
+  },
+  "src/lib/queries.ts": {
+    "mtime": 1793610957228.4763,
+    "hash": "a1edeb7e88d878f132906acabcae9633"
+  },
+  "src/lib/xlsx.ts": {
+    "mtime": 1793610957229.477,
+    "hash": "933f641fa33795d9c03445475cd9809d"
+  },
+  "tailwind.config.ts": {
+    "mtime": 1793610957229.477,
+    "hash": "3ede3967d544f0e9fa0333c24eab132e"
+  },
+  "tsconfig.json": {
+    "mtime": 1783353890.3525584,
+    "hash": ""
+  },
+  "README.md": {
+    "mtime": 1793614577776.2405,
+    "hash": "08fa8ac025bd42e154f292d0be1236a8"
+  },
+  "migrations/001-managed-events.sql": {
+    "mtime": 1793613993678.1711,
+    "hash": "4cb6b7b686e0ddc9714b28aa68b54639"
+  },
+  "scripts/add-bali-event.ts": {
+    "mtime": 1793613994074.5518,
+    "hash": "1aeb14498dc75686d3315dc4db0d41ab"
+  },
+  "scripts/add-bali-sales.ts": {
+    "mtime": 1793613994075.5964,
+    "hash": "b9221a0d003ea277b130eb666e3cea32"
+  },
+  "scripts/local/copy-live-data.mjs": {
+    "mtime": 1793614379693.3706,
+    "hash": "0882c252932073d0daf87b099e1fddca"
+  },
+  "scripts/local/neon-http-proxy.mjs": {
+    "mtime": 1793614379682.7937,
+    "hash": "5830a42c80e007ea57f55d8a3ac42293"
+  },
+  "scripts/local/verify.mjs": {
+    "mtime": 1793614379668.626,
+    "hash": "a62781e7a420090f0e03f57172c4c613"
+  },
+  "scripts/migrate.mjs": {
+    "mtime": 1793614379698.7446,
+    "hash": "605ca25c5e0aa71b223f4a32ece0853d"
+  },
+  "src/app/admin/EventManager.tsx": {
+    "mtime": 1793614379468.4717,
+    "hash": "d4a27a9b9bb0d78fdc89c3f4f04a64ec"
+  },
+  "src/app/api/admin/events/[code]/whitelist/route.ts": {
+    "mtime": 1793614379530.7292,
+    "hash": "80f9730093343b7e82a0ea593642cbf4"
+  },
+  "src/app/api/admin/events/route.ts": {
+    "mtime": 1793614379517.6072,
+    "hash": "53864b13e0d38b6a97b52abb4b8c7e97"
+  },
+  "src/components/WorkspaceShell.tsx": {
+    "mtime": 1793614379341.6174,
+    "hash": "87b21ffbbdb9d29b52bd73bc1d791dd4"
+  },
+  "src/lib/event-input.ts": {
+    "mtime": 1793614379503.9954,
+    "hash": "f5dec60cdf639e0aaea19a987d879fec"
+  },
+  "src/lib/managed-events.ts": {
+    "mtime": 1793614379491.895,
+    "hash": "aad69ca200b454229c8dd9378f22ae8f"
+  },
+  "DEPLOYMENT.local.md": {
+    "mtime": 1793614578685.1377,
+    "hash": "cb3c90b9c3d315a30f033b55c3811475"
+  },
+  "compose.yaml": {
+    "mtime": 1793613539931.115,
+    "hash": "d47ae689ed95d6ecd1fcdef0e3d7b139"
+  },
+  "public/gastro-logo.webp": {
+    "mtime": 1792307543681.546,
+    "hash": "2c72de02f5118f7233359ccf7af9947a"
+  },
+  "public/logo-white.png": {
+    "mtime": 1793610957218.3503,
+    "hash": "fe60608ccab3ae7904d28f0264ad521b"
+  },
+  "src/components/EventName.tsx": {
+    "mtime": 1793614866046.8328,
+    "hash": "4f18ba3f9f36cb6311109e9443a6510b"
+  },
+  "src/components/Pagination.tsx": {
+    "mtime": 1793614866059.9473,
+    "hash": "3c28a7ebededf7e7235d87d00066f7be"
+  }
+}

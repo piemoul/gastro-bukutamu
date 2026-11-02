@@ -1,0 +1,9 @@
+.env*
+.git/**
+.graphify/**
+.next/**
+node_modules/**
+.local-deployment/**
+graphify-out/**
+public/logo.png
+package-lock.json

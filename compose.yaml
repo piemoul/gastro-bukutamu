@@ -1,0 +1,58 @@
+name: gastro-bukutamu
+services:
+  app:
+    container_name: gastro-bukutamu
+    image: gastro-bukutamu:local
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      bukutamu-proxy:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3047:3000"
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  bukutamu-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bukutamu
+      POSTGRES_USER: bukutamu
+      POSTGRES_PASSWORD: ${LOCAL_POSTGRES_PASSWORD:?Set LOCAL_POSTGRES_PASSWORD in .env}
+    volumes:
+      - bukutamu_local_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bukutamu -d bukutamu"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  bukutamu-proxy:
+    image: gastro-bukutamu:local-tools
+    build:
+      context: .
+      target: dependencies
+    command: ["node", "/app/scripts/local/neon-http-proxy.mjs"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    volumes:
+      - ./scripts/local:/app/scripts/local:ro
+    depends_on:
+      bukutamu-db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  bukutamu_local_data:

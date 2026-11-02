@@ -1,0 +1,22 @@
+{
+  "0": "Session and Ownership",
+  "1": "Managed Event Access",
+  "2": "Workspace Interface",
+  "3": "Guest Data and Exports",
+  "4": "Application Access Policies",
+  "5": "Local Integration Checks",
+  "6": "Local Docker Deployment",
+  "7": "Event Access Schema",
+  "8": "Read Only Data Copy",
+  "9": "Initial Account Seeding",
+  "10": "Root Layout Metadata",
+  "11": "Local HTTP Adapter",
+  "12": "Email Password Login",
+  "13": "Next Framework Configuration",
+  "14": "PostCSS Build Configuration",
+  "15": "Legacy Bali Event",
+  "16": "Legacy Bali Accounts",
+  "17": "Schema Migration Runner",
+  "18": "Tailwind Theme Configuration",
+  "19": "Gastro Brand Asset"
+}

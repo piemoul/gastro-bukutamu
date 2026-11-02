@@ -1,0 +1,5 @@
+{
+  "runtime": "typescript",
+  "version": "0.17.1",
+  "engine": "@sentropic/graphify/dist/skill-runtime.js"
+}

@@ -1,0 +1,4 @@
+# Preserve the bundled Graphify Studio assets without treating embedded template
+# whitespace in vendor code as an application-source formatting error.
+/.graphify/studio/assets/* -whitespace
+/.graphify/studio/studio*.html -whitespace
