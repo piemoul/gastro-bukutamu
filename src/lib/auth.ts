@@ -2,7 +2,13 @@ import { cookies } from "next/headers";
 import { getIronSession, type SessionOptions } from "iron-session";
 import { sql, type UserRow } from "./db";
 import { resolveEventCode } from "./events";
-import { canUseManagedEvent, isManagedEventCode, isManagedOnlyUser, resolveManagedEvent } from "./managed-events";
+import {
+  canUseManagedEvent,
+  isManagedEventCode,
+  isManagedOnlyUser,
+  resolveManagedEvent,
+  eventPasswordFingerprint,
+} from "./managed-events";
 
 export interface AppSession {
   userId?: number;
@@ -11,6 +17,7 @@ export interface AppSession {
   email?: string;
   area?: string | null;
   eventCode?: string; // acara aktif (untuk sales). Admin tidak punya.
+  eventPasswordHash?: string; // Invalidate new-event sessions after a password change.
 }
 
 const SESSION_NAME = "gastro_session";
@@ -19,7 +26,7 @@ function sessionOptions(): SessionOptions {
   const password = process.env.SESSION_SECRET;
   if (!password || password.length < 32) {
     throw new Error(
-      "SESSION_SECRET must be set and at least 32 characters. Set it in .env / Vercel env."
+      "SESSION_SECRET must be set and at least 32 characters. Set it in .env / Vercel env.",
     );
   }
   return {
@@ -39,8 +46,17 @@ export async function getSession(): Promise<AppSession> {
   "use server";
   const c = await cookies();
   const session = await getIronSession<AppSession>(c, sessionOptions());
-  if (session.role === "sales" && session.userId && isManagedEventCode(session.eventCode) &&
-      !await canUseManagedEvent(session.userId, session.eventCode!)) return {};
+  if (
+    session.role === "sales" &&
+    session.userId &&
+    isManagedEventCode(session.eventCode) &&
+    !(await canUseManagedEvent(
+      session.userId,
+      session.eventCode!,
+      session.eventPasswordHash,
+    ))
+  )
+    return {};
   return session;
 }
 
@@ -71,14 +87,23 @@ import bcrypt from "bcryptjs";
  */
 export async function verifyLogin(
   email: string,
-  password: string
-): Promise<{ ok: boolean; user?: UserRow; eventCode?: string; error?: string }> {
-  const rows = (await sql`SELECT * FROM users WHERE lower(email) = lower(${email})`) as UserRow[];
-  if (rows.length === 0) return { ok: false, error: "Email atau password salah." };
+  password: string,
+): Promise<{
+  ok: boolean;
+  user?: UserRow;
+  eventCode?: string;
+  eventPasswordHash?: string;
+  error?: string;
+}> {
+  const rows =
+    (await sql`SELECT * FROM users WHERE lower(email) = lower(${email})`) as UserRow[];
+  if (rows.length === 0)
+    return { ok: false, error: "Email atau password salah." };
   const user = rows[0];
 
   if (user.role === "admin") {
-    if (!user.password_hash) return { ok: false, error: "Akun admin belum punya password." };
+    if (!user.password_hash)
+      return { ok: false, error: "Akun admin belum punya password." };
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return { ok: false, error: "Email atau password salah." };
     return { ok: true, user };
@@ -86,8 +111,16 @@ export async function verifyLogin(
 
   // sales: password = password acara
   const legacyCode = resolveEventCode(password);
-  if (legacyCode && await isManagedOnlyUser(user.id)) return { ok: false, error: "Email atau password acara salah." };
-  const eventCode = legacyCode ?? await resolveManagedEvent(email, password);
+  if (legacyCode && (await isManagedOnlyUser(user.id)))
+    return { ok: false, error: "Email atau password acara salah." };
+  const eventCode = legacyCode ?? (await resolveManagedEvent(email, password));
   if (!eventCode) return { ok: false, error: "Password acara salah." };
-  return { ok: true, user, eventCode };
+  return {
+    ok: true,
+    user,
+    eventCode,
+    eventPasswordHash: isManagedEventCode(eventCode)
+      ? eventPasswordFingerprint(password)
+      : undefined,
+  };
 }

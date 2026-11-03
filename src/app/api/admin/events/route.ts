@@ -30,7 +30,10 @@ export async function POST(req: Request) {
     );
   } catch (error) {
     if (error instanceof EventInputError)
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     throw error;
   }
 }

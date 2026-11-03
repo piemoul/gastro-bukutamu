@@ -13,12 +13,18 @@ export async function POST(req: Request) {
   const password = body.password ?? "";
 
   if (!email || !password) {
-    return NextResponse.json({ error: "Email dan password wajib diisi." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Email dan password wajib diisi." },
+      { status: 400 },
+    );
   }
 
   const result = await verifyLogin(email, password);
   if (!result.ok || !result.user) {
-    return NextResponse.json({ error: result.error ?? "Login gagal." }, { status: 401 });
+    return NextResponse.json(
+      { error: result.error ?? "Login gagal." },
+      { status: 401 },
+    );
   }
 
   await saveSession({
@@ -28,6 +34,7 @@ export async function POST(req: Request) {
     email: result.user.email,
     area: result.user.area,
     eventCode: result.eventCode, // undefined untuk admin
+    eventPasswordHash: result.eventPasswordHash,
   });
 
   return NextResponse.json({

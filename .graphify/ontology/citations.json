@@ -1,6 +1,6 @@
 {
   "schema": "graphify_ontology_citations_v1",
-  "graph_signature": "714cc2b5d68afd0f2b0173efff165564cd0edef432039b2959dd4f727327abf8",
+  "graph_signature": "6e886aedd6ec17a134c25c3177c49b17ea7b3294b63bb5cff05ca7254bb76a93",
   "nodes": {
     "admin_adminclient_adminclient": {
       "count": 1,
@@ -515,14 +515,14 @@
         {
           "source_file": "src/lib/auth.ts",
           "source_location": "document",
-          "quote": "export interface AppSession { userId?: number; role?: \"sales\" | \"admin\"; name?: string; email?: string; area?: string | null; eventCode?: string; // acara aktif (untuk sales). Admin tidak punya. }",
+          "quote": "export interface AppSession { userId?: number; role?: \"sales\" | \"admin\"; name?: string; email?: string; area?: string | null; eventCode?: string; // acara aktif (untuk sales). Admin tidak punya. eventPasswordHash?: string; // Invalidate …",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
         },
         {
           "source_file": "src/lib/auth.ts",
           "source_location": "document",
-          "quote": "export async function getSession(): Promise<AppSession> { \"use server\"; const c = await cookies(); const session = await getIronSession<AppSession>(c, sessionOptions()); if (session.role === \"sales\" && session.userId && isManagedEventCode(session.eventCode …",
+          "quote": "export async function getSession(): Promise<AppSession> { \"use server\"; const c = await cookies(); const session = await getIronSession<AppSession>(c, sessionOptions()); if ( session.role === \"sales\" && session.userId && isManagedEventCode(session.eventCode …",
           "confidence": "EXTRACTED",
           "paragraph_id": "p4"
         },
@@ -560,7 +560,7 @@
         {
           "source_file": "src/lib/auth.ts",
           "source_location": "document",
-          "quote": "export async function getSession(): Promise<AppSession> { \"use server\"; const c = await cookies(); const session = await getIronSession<AppSession>(c, sessionOptions()); if (session.role === \"sales\" && session.userId && isManagedEventCode(session …",
+          "quote": "export async function getSession(): Promise<AppSession> { \"use server\"; const c = await cookies(); const session = await getIronSession<AppSession>(c, sessionOptions()); if ( session.role === \"sales\" && session.userId && isManagedEventCode(session …",
           "confidence": "EXTRACTED",
           "paragraph_id": "p4"
         }
@@ -584,7 +584,7 @@
         {
           "source_file": "src/lib/auth.ts",
           "source_location": "document",
-          "quote": "import { cookies } from \"next/headers\"; import { getIronSession, type SessionOptions } from \"iron-session\"; import { sql, type UserRow } from \"./db\"; import { resolveEventCode } from \"./events\"; import { canUseManagedEvent, isManagedEventCode, isManagedOnlyUser, resolveManagedEvent …",
+          "quote": "import { cookies } from \"next/headers\"; import { getIronSession, type SessionOptions } from \"iron-session\"; import { sql, type UserRow } from \"./db\"; import { resolveEventCode } from \"./events\"; import { canUseManagedEvent, isManagedEventCode, isManagedOnlyUser, resolveManagedEvent, …",
           "confidence": "EXTRACTED",
           "paragraph_id": "p0"
         },
@@ -598,7 +598,7 @@
         {
           "source_file": "src/lib/auth.ts",
           "source_location": "document",
-          "quote": "… Promise<AppSession> { \"use server\"; const c = await cookies(); const session = await getIronSession<AppSession>(c, sessionOptions()); if (session.role === \"sales\" && session.userId && isManagedEventCode(session.eventCode) && !await canUseManagedEvent(session.userId, session.eventCode!)) return {}; return session; }",
+          "quote": "… Promise<AppSession> { \"use server\"; const c = await cookies(); const session = await getIronSession<AppSession>(c, sessionOptions()); if ( session.role === \"sales\" && session.userId && isManagedEventCode(session.eventCode) && !(await canUseManagedEvent( session.userId, session.eventCode!, session.eventPasswordHash, )",
           "confidence": "EXTRACTED",
           "paragraph_id": "p4"
         },
@@ -624,7 +624,7 @@
         {
           "source_file": "src/lib/auth.ts",
           "source_location": "document",
-          "quote": "… fhi@... / bali@...). Return code acara. * * Return: { ok, user, eventCode?, error? } */ export async function verifyLogin( email: string, password: string ): Promise<{ ok: boolean; user?: UserRow; eventCode?: string; error?: string }> { const rows = (await sql`SELECT * FROM users WHERE lower(email) = lower(${email})`",
+          "quote": "… fhi@... / bali@...). Return code acara. * * Return: { ok, user, eventCode?, error? } */ export async function verifyLogin( email: string, password: string, ): Promise<{ ok: boolean; user?: UserRow; eventCode?: string; eventPasswordHash?: string; error?: string; }> { const rows = (await sql`SELECT * FROM users WHERE l",
           "confidence": "EXTRACTED",
           "paragraph_id": "p8"
         }
@@ -700,33 +700,40 @@
           "source_location": "document",
           "quote": "… address.length > 500) throw new EventInputError( \"Alamat event wajib diisi, maksimal 500 karakter.\", ); if (!Object.hasOwn(EVENT_TIMEZONES, timezone)) throw new EventInputError(\"Pilih zona waktu WIB, WITA, atau WIT.\"); if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(startsAt)) throw new EventInputError(\"Tanggal dan waktu",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p2"
+          "paragraph_id": "p3"
         }
       ]
     },
     "lib_event_input_eventinputerror": {
-      "count": 3,
+      "count": 4,
       "citations": [
         {
           "source_file": "src/lib/event-input.ts",
           "source_location": "document",
-          "quote": "export class EventInputError extends Error {}",
+          "quote": "export class EventInputError extends Error { constructor( message: string, public readonly status = 400, ) { super(message); } }",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
         },
         {
           "source_file": "src/lib/event-input.ts",
           "source_location": "document",
-          "quote": "export function parseEventInput(body: unknown) { if (!body || typeof body !== \"object\") throw new EventInputError(\"Form event tidak valid.\"); const data = body as Record<string, unknown>; const name = typeof data.name === \"string\" ? data.name.trim() : \"\"; const address = typeof data.address === \"string\" ? data …",
+          "quote": "… : undefined; if ( typeof password !== \"string\" || password.length < 8 || password.length > 128 ) { throw new EventInputError(\"Password acara wajib diisi, 8–128 karakter.\"); } if (password !== password.trim()) { throw new EventInputError( \"Password acara tidak boleh diawali atau diakhiri spasi.\", ); } return password;",
           "confidence": "EXTRACTED",
           "paragraph_id": "p2"
         },
         {
           "source_file": "src/lib/event-input.ts",
           "source_location": "document",
-          "quote": "export function parseWhitelistEmails(body: unknown): string[] { if (!body || typeof body !== \"object\") throw new EventInputError(\"Daftar email tidak valid.\"); const emails = (body as Record<string, unknown>).emails; if (!Array.isArray(emails) || !emails.length || emails.length > 100) { throw new EventInputError(\"Isi 1",
+          "quote": "export function parseEventInput(body: unknown) { if (!body || typeof body !== \"object\") throw new EventInputError(\"Form event tidak valid.\"); const data = body as Record<string, unknown>; const name = typeof data.name === \"string\" ? data.name.trim() : \"\"; const address = typeof data.address === \"string\" ? data …",
           "confidence": "EXTRACTED",
           "paragraph_id": "p3"
+        },
+        {
+          "source_file": "src/lib/event-input.ts",
+          "source_location": "document",
+          "quote": "export function parseWhitelistEmails(body: unknown): string[] { if (!body || typeof body !== \"object\") throw new EventInputError(\"Daftar email tidak valid.\"); const emails = (body as Record<string, unknown>).emails; if (!Array.isArray(emails) || !emails.length || emails.length > 100) { throw new EventInputError(\"Isi 1",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p4"
         }
       ]
     },
@@ -738,7 +745,26 @@
           "source_location": "document",
           "quote": "export function parseEventInput(body: unknown) { if (!body || typeof body !== \"object\") throw new EventInputError(\"Form event tidak valid.\"); const data = body as Record<string, unknown>; const name = typeof data.name === \"string …",
           "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
+        }
+      ]
+    },
+    "lib_event_input_parseeventpassword": {
+      "count": 2,
+      "citations": [
+        {
+          "source_file": "src/lib/event-input.ts",
+          "source_location": "document",
+          "quote": "export function parseEventPassword(body: unknown): string { const password = body && typeof body === \"object\" ? (body as Record<string, unknown>).password : undefined; if ( typeof password !== \"string\" || password.length < 8 || …",
+          "confidence": "EXTRACTED",
           "paragraph_id": "p2"
+        },
+        {
+          "source_file": "src/lib/event-input.ts",
+          "source_location": "document",
+          "quote": "… EVENT_TIMEZONES].offset; return { name, address, startsAt: new Date(startsAt + \":00\" + offset).toISOString(), timezone, password: parseEventPassword(body), }; }",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
@@ -750,7 +776,7 @@
           "source_location": "document",
           "quote": "export function parseWhitelistEmails(body: unknown): string[] { if (!body || typeof body !== \"object\") throw new EventInputError(\"Daftar email tidak valid.\"); const emails = (body as Record<string, unknown>).emails; if (!Array …",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p3"
+          "paragraph_id": "p4"
         }
       ]
     },
@@ -798,7 +824,7 @@
           "source_location": "document",
           "quote": "export async function addWhitelist(code: string, body: unknown) { const emails = parseWhitelistEmails(body); const admins = await sql`SELECT id FROM users WHERE lower(email) = ANY(${emails}) AND role = 'admin'`; if (admins.length) throw …",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p7"
+          "paragraph_id": "p10"
         }
       ]
     },
@@ -808,9 +834,35 @@
         {
           "source_file": "src/lib/managed-events.ts",
           "source_location": "document",
-          "quote": "export async function canUseManagedEvent(userId: number, code: string) { const rows = await sql` SELECT 1 FROM event_whitelist w JOIN users u ON lower(u.email) = w.email WHERE u.id = ${userId} AND w.event_code = ${code} AND u.role = …",
+          "quote": "export async function canUseManagedEvent( userId: number, code: string, passwordFingerprint?: string, ) { const rows = await sql` SELECT 1 FROM event_whitelist w JOIN users u ON lower(u.email) = w.email JOIN managed_events m ON m.event_code …",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p10"
+          "paragraph_id": "p13"
+        }
+      ]
+    },
+    "lib_managed_events_checklegacypassword": {
+      "count": 3,
+      "citations": [
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "function checkLegacyPassword(password: string) { if (Object.values(getEventPasswords()).includes(password)) { throw new EventInputError( \"Password sudah digunakan oleh event lain. Gunakan password yang berbeda.\", 409, ); …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… (body); const code = \"EVT_\" + randomBytes(12).toString(\"hex\").toUpperCase(); const password = input.password; checkLegacyPassword(password); try { await sql.transaction([ sql`INSERT INTO events (code, name, event_password) VALUES (${code}, ${input.name}, ${password})`, sql`INSERT INTO managed_events (event_code, addr",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p7"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… function updateManagedEventPassword(code: string, body: unknown) { const password = parseEventPassword(body); checkLegacyPassword(password); try { // The unique fingerprint prevents ambiguous event selection at login. // Both password representations change together or neither changes. const [updated] = await sql.tra",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p8"
         }
       ]
     },
@@ -820,35 +872,9 @@
         {
           "source_file": "src/lib/managed-events.ts",
           "source_location": "document",
-          "quote": "export async function createManagedEvent(body: unknown, adminId: number) { const input = parseEventInput(body); const code = \"EVT_\" + randomBytes(12).toString(\"hex\").toUpperCase(); const password = \"GT-\" + randomBytes(12).toString(\"base64url …",
+          "quote": "export async function createManagedEvent(body: unknown, adminId: number) { const input = parseEventInput(body); const code = \"EVT_\" + randomBytes(12).toString(\"hex\").toUpperCase(); const password = input.password; checkLegacyPassword(password …",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p5"
-        }
-      ]
-    },
-    "lib_managed_events_digest": {
-      "count": 3,
-      "citations": [
-        {
-          "source_file": "src/lib/managed-events.ts",
-          "source_location": "document",
-          "quote": "export function isManagedEventCode(code?: string) { return code?.startsWith(\"EVT_\") ?? false; } const digest = (password: string) => createHash(\"sha256\").update(password).digest(\"hex\");",
-          "confidence": "EXTRACTED",
-          "paragraph_id": "p2"
-        },
-        {
-          "source_file": "src/lib/managed-events.ts",
-          "source_location": "document",
-          "quote": "… timezone, password_hash, created_by) VALUES (${code}, ${input.address}, ${input.startsAt}, ${input.timezone}, ${digest(password)}, ${adminId})`, ]); return { code, name: input.name, address: input.address, starts_at: input.startsAt, timezone: input.timezone, access_password: password, whitelist: [], } satisfies Manag",
-          "confidence": "EXTRACTED",
-          "paragraph_id": "p5"
-        },
-        {
-          "source_file": "src/lib/managed-events.ts",
-          "source_location": "document",
-          "quote": "… m.event_code FROM managed_events m JOIN event_whitelist w ON w.event_code = m.event_code WHERE m.password_hash = ${digest(password)} AND w.email = ${email.trim().toLowerCase()} `; return (rows[0]?.event_code as string | undefined) ?? null; }",
-          "confidence": "EXTRACTED",
-          "paragraph_id": "p9"
+          "paragraph_id": "p7"
         }
       ]
     },
@@ -867,7 +893,40 @@
           "source_location": "document",
           "quote": "export async function getEventOptions(): Promise<EventOption[]> { return (await sql`SELECT code, name FROM events ORDER BY code`) as EventOption[]; }",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p3"
+          "paragraph_id": "p5"
+        }
+      ]
+    },
+    "lib_managed_events_eventpasswordfingerprint": {
+      "count": 4,
+      "citations": [
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… m.event_code FROM managed_events m JOIN event_whitelist w ON w.event_code = m.event_code WHERE m.password_hash = ${eventPasswordFingerprint(password)} AND w.email = ${email.trim().toLowerCase()} `; return (rows[0]?.event_code as string | undefined) ?? null; }",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p12"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "export function isManagedEventCode(code?: string) { return code?.startsWith(\"EVT_\") ?? false; } export const eventPasswordFingerprint = (password: string) => createHash(\"sha256\").update(password).digest(\"hex\");",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p2"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… timezone, password_hash, created_by) VALUES (${code}, ${input.address}, ${input.startsAt}, ${input.timezone}, ${eventPasswordFingerprint(password)}, ${adminId})`, ]); } catch (error) { handlePasswordConflict(error); } return { code, name: input.name, address: input.address, starts_at: input.startsAt, timezone: input.",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p7"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… or neither changes. const [updated] = await sql.transaction([ sql`UPDATE managed_events SET password_hash = ${eventPasswordFingerprint(password)} WHERE event_code = ${code} RETURNING event_code`, sql`UPDATE events SET event_password = ${password} WHERE code = ${code} AND EXISTS (SELECT 1 FROM managed_events WHERE eve",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p8"
         }
       ]
     },
@@ -879,7 +938,33 @@
           "source_location": "document",
           "quote": "export async function getEventOptions(): Promise<EventOption[]> { return (await sql`SELECT code, name FROM events ORDER BY code`) as EventOption[]; }",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p3"
+          "paragraph_id": "p5"
+        }
+      ]
+    },
+    "lib_managed_events_handlepasswordconflict": {
+      "count": 3,
+      "citations": [
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "function handlePasswordConflict(error: unknown): never { if ((error as { code?: string })?.code === \"23505\") { throw new EventInputError( \"Password sudah digunakan oleh event lain. Gunakan password yang berbeda.\", 409, …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p4"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… ${input.startsAt}, ${input.timezone}, ${eventPasswordFingerprint(password)}, ${adminId})`, ]); } catch (error) { handlePasswordConflict(error); } return { code, name: input.name, address: input.address, starts_at: input.startsAt, timezone: input.timezone, access_password: password, whitelist: [], } satisfies ManagedE",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p7"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "… (SELECT 1 FROM managed_events WHERE event_code = ${code})`, ]); return updated.length > 0; } catch (error) { handlePasswordConflict(error); } }",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p8"
         }
       ]
     },
@@ -891,7 +976,7 @@
           "source_location": "document",
           "quote": "export async function hasManagedEvent(code: string) { return ( ( await sql`SELECT event_code FROM managed_events WHERE event_code = ${code}` ).length > 0 ); }",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p6"
+          "paragraph_id": "p9"
         }
       ]
     },
@@ -901,7 +986,7 @@
         {
           "source_file": "src/lib/managed-events.ts",
           "source_location": "document",
-          "quote": "export function isManagedEventCode(code?: string) { return code?.startsWith(\"EVT_\") ?? false; } const digest = (password: string) => createHash(\"sha256\").update(password).digest(\"hex\");",
+          "quote": "export function isManagedEventCode(code?: string) { return code?.startsWith(\"EVT_\") ?? false; } export const eventPasswordFingerprint = (password: string) => createHash(\"sha256\").update(password).digest(\"hex\");",
           "confidence": "EXTRACTED",
           "paragraph_id": "p2"
         }
@@ -915,7 +1000,7 @@
           "source_location": "document",
           "quote": "export async function isManagedOnlyUser(userId: number) { return ( ( await sql`SELECT user_id FROM managed_event_users WHERE user_id = ${userId}` ).length > 0 ); }",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p11"
+          "paragraph_id": "p14"
         }
       ]
     },
@@ -927,7 +1012,7 @@
           "source_location": "document",
           "quote": "/** Admin-only callers: includes the password needed to distribute event access. */ export async function listManagedEvents(): Promise<ManagedEvent[]> { return (await sql` SELECT e.code, e.name, e.event_password AS access_password, m.address, m.starts_at, m.timezone, COALESCE((SELECT json_agg(w.email ORDER BY w.email …",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p4"
+          "paragraph_id": "p6"
         }
       ]
     },
@@ -944,7 +1029,7 @@
         {
           "source_file": "src/lib/managed-events.ts",
           "source_location": "document",
-          "quote": "export function isManagedEventCode(code?: string) { return code?.startsWith(\"EVT_\") ?? false; } const digest = (password: string) => createHash(\"sha256\").update(password).digest(\"hex\");",
+          "quote": "export function isManagedEventCode(code?: string) { return code?.startsWith(\"EVT_\") ?? false; } export const eventPasswordFingerprint = (password: string) => createHash(\"sha256\").update(password).digest(\"hex\");",
           "confidence": "EXTRACTED",
           "paragraph_id": "p2"
         },
@@ -953,26 +1038,26 @@
           "source_location": "document",
           "quote": "/** Admin-only callers: includes the password needed to distribute event access. */ export async function listManagedEvents(): Promise<ManagedEvent[]> { return (await sql` SELECT e.code, e.name, e.event_password AS access_password, m.address, m.starts_at, m.timezone, COALESCE((SELECT json_agg(w.email ORDER BY w.email)",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p4"
-        },
-        {
-          "source_file": "src/lib/managed-events.ts",
-          "source_location": "document",
-          "quote": "export async function createManagedEvent(body: unknown, adminId: number) { const input = parseEventInput(body); const code = \"EVT_\" + randomBytes(12).toString(\"hex\").toUpperCase(); const password = \"GT-\" + randomBytes(12).toString(\"base64url …",
-          "confidence": "EXTRACTED",
-          "paragraph_id": "p5"
-        },
-        {
-          "source_file": "src/lib/managed-events.ts",
-          "source_location": "document",
-          "quote": "export async function hasManagedEvent(code: string) { return ( ( await sql`SELECT event_code FROM managed_events WHERE event_code = ${code}` ).length > 0 ); }",
-          "confidence": "EXTRACTED",
           "paragraph_id": "p6"
         },
         {
           "source_file": "src/lib/managed-events.ts",
           "source_location": "document",
-          "quote": "export async function resolveManagedEvent( email: string, password: string, ): Promise<string | null> { const rows = await sql` SELECT m.event_code FROM managed_events m JOIN event_whitelist w ON w.event_code = m.event_code WHERE m.password_hash …",
+          "quote": "export async function createManagedEvent(body: unknown, adminId: number) { const input = parseEventInput(body); const code = \"EVT_\" + randomBytes(12).toString(\"hex\").toUpperCase(); const password = input.password; checkLegacyPassword(password …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p7"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "export async function updateManagedEventPassword(code: string, body: unknown) { const password = parseEventPassword(body); checkLegacyPassword(password); try { // The unique fingerprint prevents ambiguous event selection at login. // Both …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p8"
+        },
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "export async function hasManagedEvent(code: string) { return ( ( await sql`SELECT event_code FROM managed_events WHERE event_code = ${code}` ).length > 0 ); }",
           "confidence": "EXTRACTED",
           "paragraph_id": "p9"
         }
@@ -986,7 +1071,7 @@
           "source_location": "document",
           "quote": "export async function removeWhitelist(code: string, body: unknown) { const emails = parseWhitelistEmails(body); await sql`DELETE FROM event_whitelist WHERE event_code = ${code} AND email = ANY(${emails})`; }",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p8"
+          "paragraph_id": "p11"
         }
       ]
     },
@@ -998,7 +1083,19 @@
           "source_location": "document",
           "quote": "export async function resolveManagedEvent( email: string, password: string, ): Promise<string | null> { const rows = await sql` SELECT m.event_code FROM managed_events m JOIN event_whitelist w ON w.event_code = m.event_code WHERE m.password_hash …",
           "confidence": "EXTRACTED",
-          "paragraph_id": "p9"
+          "paragraph_id": "p12"
+        }
+      ]
+    },
+    "lib_managed_events_updatemanagedeventpassword": {
+      "count": 1,
+      "citations": [
+        {
+          "source_file": "src/lib/managed-events.ts",
+          "source_location": "document",
+          "quote": "export async function updateManagedEventPassword(code: string, body: unknown) { const password = parseEventPassword(body); checkLegacyPassword(password); try { // The unique fingerprint prevents ambiguous event selection at login. // …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p8"
         }
       ]
     },
@@ -1234,7 +1331,7 @@
       ]
     },
     "local_verify_check": {
-      "count": 1,
+      "count": 3,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1242,11 +1339,25 @@
           "quote": "… `qa-${suffix}@example.test`, `qa-other-${suffix}@example.test`, ]; const eventCodes = [], clientIds = []; let passed = 0; function check(label, condition) { assert.ok(condition, label); passed++; console.log(\"PASS \" + label); } async function request(method, path, body, cookie) { return fetch(base + path, { method, h",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "check( \"unique event code and admin-chosen password\", first.code !== second.code && first.access_password !== second.access_password && first.access_password === `QA-Initial-0-${suffix}`, ); const stored = ( await …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p2"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "await login(qaEmails[0], process.env.NFH_EVENT_PASSWORD, 401); check(\"new event user cannot access legacy events\", true); const guest = { client_name: \"QA Guest \" + suffix, company_name: \"QA Local Company\", product_interest: \"Oven\", email: \"\", phone: \"\", notes: \"Local test …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_clientids": {
-      "count": 1,
+      "count": 2,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1254,11 +1365,18 @@
           "quote": "… const qaEmails = [ `qa-${suffix}@example.test`, `qa-other-${suffix}@example.test`, ]; const eventCodes = [], clientIds = []; let passed = 0; function check(label, condition) { assert.ok(condition, label); passed++; console.log(\"PASS \" + label); } async function request(method, path, body, cookie) { return fetch(base",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… \"/api/clients\", guest, cookie); assert.equal(insert.status, 201); const inserted = (await insert.json()).client; clientIds.push(inserted.id); check( \"guest create persists against the active event\", ( await db.query(\"SELECT event_code FROM clients WHERE id=$1\", [ inserted.id, ]) ).rows[0].event_code === first.code, )",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_eventcodes": {
-      "count": 1,
+      "count": 2,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1266,11 +1384,18 @@
           "quote": "… (6).toString(\"hex\"); const qaEmails = [ `qa-${suffix}@example.test`, `qa-other-${suffix}@example.test`, ]; const eventCodes = [], clientIds = []; let passed = 0; function check(label, condition) { assert.ok(condition, label); passed++; console.log(\"PASS \" + label); } async function request(method, path, body, cookie)",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… clients WHERE id=ANY($1::int[])\", [clientIds]); await db.query(\"DELETE FROM events WHERE code=ANY($1::text[])\", [eventCodes]); await db.query(\"DELETE FROM users WHERE email=ANY($1::text[])\", [qaEmails]); const after = await snapshot(); assert.deepEqual( after, before, \"Existing user/event/guest rows must be unchanged",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_login": {
-      "count": 1,
+      "count": 3,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1278,11 +1403,25 @@
           "quote": "… {}), }, body: body === undefined ? undefined : JSON.stringify(body), redirect: \"manual\", }); } async function login(email, password, expected = 200) { const res = await request(\"POST\", \"/api/auth/login\", { email, password }); assert.equal(res.status, expected, \"login status\"); if (expected !== 200) return null; const",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… \"admin event response is not cacheable\", initial.headers.get(\"cache-control\").includes(\"no-store\"), ); await login(sales.email, first.access_password, 401); check(\"unlisted existing user denied\", true); const whitelistPath = \"/api/admin/events/\" + first.code + \"/whitelist\"; check( \"invalid whitelist batch rejected at",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p2"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "await login(qaEmails[0], process.env.NFH_EVENT_PASSWORD, 401); check(\"new event user cannot access legacy events\", true); const guest = { client_name: \"QA Guest \" + suffix, company_name: \"QA Local Company\", product_interest: …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_qaemails": {
-      "count": 1,
+      "count": 3,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1290,11 +1429,25 @@
           "quote": "… process.env.VERIFY_BASE_URL ?? \"http://gastro-bukutamu:3000\"; const suffix = randomBytes(6).toString(\"hex\"); const qaEmails = [ `qa-${suffix}@example.test`, `qa-other-${suffix}@example.test`, ]; const eventCodes = [], clientIds = []; let passed = 0; function check(label, condition) { assert.ok(condition, label); pass",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… \"/whitelist\"; check( \"invalid whitelist batch rejected atomically\", ( await request( \"POST\", whitelistPath, { emails: [qaEmails[0], \"invalid\"] }, adminCookie, ) ).status === 400, ); check( \"invalid batch adds no email\", ( await db.query( \"SELECT count(*)::int AS n FROM event_whitelist WHERE event_code=$1\", [first.cod",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p2"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "await login(qaEmails[0], process.env.NFH_EVENT_PASSWORD, 401); check(\"new event user cannot access legacy events\", true); const guest = { client_name: \"QA Guest \" + suffix, company_name: \"QA Local Company\", product_interest: …",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_request": {
-      "count": 1,
+      "count": 3,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1302,11 +1455,25 @@
           "quote": "… check(label, condition) { assert.ok(condition, label); passed++; console.log(\"PASS \" + label); } async function request(method, path, body, cookie) { return fetch(base + path, { method, headers: { ...(body !== undefined ? { \"Content-Type\": \"application/json\" } : {}), ...(cookie ? { Cookie: cookie } : {}), }, body: bo",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… stored.starts_at.toISOString() === \"2027-03-01T01:30:00.000Z\" && stored.timezone === \"Asia/Makassar\", ); const initial = await request( \"GET\", \"/api/admin/events\", undefined, adminCookie, ); const initialBody = await initial.json(); check( \"event remains after authoritative reload\", initialBody.events.some( (event) =",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p2"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… Local Company\", product_interest: \"Oven\", email: \"\", phone: \"\", notes: \"Local test only\", }; const insert = await request(\"POST\", \"/api/clients\", guest, cookie); assert.equal(insert.status, 201); const inserted = (await insert.json()).client; clientIds.push(inserted.id); check( \"guest create persists against the acti",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_snapshot": {
-      "count": 1,
+      "count": 2,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1314,11 +1481,18 @@
           "quote": "… assert.ok(header.includes(\"HttpOnly\") && header.includes(\"Secure\")); return header.split(\";\")[0]; } async function snapshot() { const result = {}; for (const table of [\"users\", \"events\", \"clients\"]) { result[table] = ( await db.query( `SELECT count(*)::int AS n, md5(string_agg(row_to_json(t)::text,'' ORDER BY ${table",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… [eventCodes]); await db.query(\"DELETE FROM users WHERE email=ANY($1::text[])\", [qaEmails]); const after = await snapshot(); assert.deepEqual( after, before, \"Existing user/event/guest rows must be unchanged after test cleanup\", ); passed++; console.log(\"PASS original data and credentials unchanged after cleanup\"); co",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
     "local_verify_suffix": {
-      "count": 1,
+      "count": 3,
       "citations": [
         {
           "source_file": "scripts/local/verify.mjs",
@@ -1326,6 +1500,20 @@
           "quote": "… target.toString() }); await db.connect(); const base = process.env.VERIFY_BASE_URL ?? \"http://gastro-bukutamu:3000\"; const suffix = randomBytes(6).toString(\"hex\"); const qaEmails = [ `qa-${suffix}@example.test`, `qa-other-${suffix}@example.test`, ]; const eventCodes = [], clientIds = []; let passed = 0; function chec",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… second.code && first.access_password !== second.access_password && first.access_password === `QA-Initial-0-${suffix}`, ); const stored = ( await db.query( \"SELECT e.name,m.address,m.starts_at,m.timezone FROM events e JOIN managed_events m ON e.code=m.event_code WHERE e.code=$1\", [first.code], ) ).rows[0]; check( \"eve",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p2"
+        },
+        {
+          "source_file": "scripts/local/verify.mjs",
+          "source_location": "document",
+          "quote": "… process.env.NFH_EVENT_PASSWORD, 401); check(\"new event user cannot access legacy events\", true); const guest = { client_name: \"QA Guest \" + suffix, company_name: \"QA Local Company\", product_interest: \"Oven\", email: \"\", phone: \"\", notes: \"Local test only\", }; const insert = await request(\"POST\", \"/api/clients\", guest,",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p3"
         }
       ]
     },
@@ -1491,6 +1679,18 @@
           "source_file": "next.config.mjs",
           "source_location": "document",
           "quote": "export default nextConfig;",
+          "confidence": "EXTRACTED",
+          "paragraph_id": "p1"
+        }
+      ]
+    },
+    "password_route_patch": {
+      "count": 1,
+      "citations": [
+        {
+          "source_file": "src/app/api/admin/events/[code]/password/route.ts",
+          "source_location": "document",
+          "quote": "export async function PATCH( req: Request, { params }: { params: { code: string } }, ) { const session = await getSession(); if (!session.userId || session.role !== \"admin\") { return NextResponse.json({ error: \"Unauthorized.\" }, { status: …",
           "confidence": "EXTRACTED",
           "paragraph_id": "p1"
         }

@@ -17,6 +17,9 @@ export function EventManager({
   const [address, setAddress] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [timezone, setTimezone] = useState("Asia/Jakarta");
+  const [password, setPassword] = useState("");
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [passwordDraft, setPasswordDraft] = useState("");
   const [emails, setEmails] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,11 @@ export function EventManager({
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const selected = events.find((event) => event.code === selectedCode);
+
+  useEffect(() => {
+    setPasswordDraft(selected?.access_password ?? "");
+    setShowPassword(false);
+  }, [selected?.code, selected?.access_password]);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/events", { cache: "no-store" });
@@ -52,7 +60,13 @@ export function EventManager({
       const res = await fetch("/api/admin/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, address, starts_at: startsAt, timezone }),
+        body: JSON.stringify({
+          name,
+          address,
+          starts_at: startsAt,
+          timezone,
+          password,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal membuat event.");
@@ -63,6 +77,8 @@ export function EventManager({
       setName("");
       setAddress("");
       setStartsAt("");
+      setPassword("");
+      setShowCreatePassword(false);
       setInfo(
         "Event berhasil dibuat. Tambahkan email user ke whitelist, lalu bagikan password acara.",
       );
@@ -70,6 +86,37 @@ export function EventManager({
       router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : "Gagal membuat event.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function savePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selected || busy) return;
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+    try {
+      const res = await fetch(`/api/admin/events/${selected.code}/password`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: passwordDraft }),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error ?? "Gagal menyimpan password acara.");
+      await load();
+      setShowPassword(false);
+      setInfo(
+        "Password acara berhasil disimpan. Jika password berubah, user perlu masuk kembali dengan password baru.",
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Gagal menyimpan password acara.",
+      );
     } finally {
       setBusy(false);
     }
@@ -202,10 +249,40 @@ export function EventManager({
               </select>
             </div>
           </div>
-          <p className="text-xs text-ink-500">
-            Password acara dibuat otomatis. User tetap masuk dengan email dan
-            password acara.
-          </p>
+          <div>
+            <label htmlFor="event-create-password" className="label">
+              Password Akses Event
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                id="event-create-password"
+                className="input min-w-0"
+                type={showCreatePassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+                maxLength={128}
+                autoComplete="new-password"
+                disabled={busy}
+                aria-describedby="event-create-password-hint"
+              />
+              <button
+                type="button"
+                className="btn-secondary text-xs shrink-0"
+                onClick={() => setShowCreatePassword((value) => !value)}
+              >
+                {showCreatePassword ? "Sembunyikan" : "Tampilkan"}
+              </button>
+            </div>
+            <p
+              id="event-create-password-hint"
+              className="text-xs text-ink-500 mt-2"
+            >
+              Tentukan password sendiri, 8–128 karakter dan berbeda dari event
+              lain. User masuk dengan email whitelist dan password ini.
+            </p>
+          </div>
           <button
             type="submit"
             className="btn-primary w-full sm:w-auto"
@@ -236,6 +313,7 @@ export function EventManager({
                   id="managed-event"
                   className="input"
                   value={selectedCode}
+                  disabled={busy}
                   onChange={(e) => {
                     setSelectedCode(e.target.value);
                     setShowPassword(false);
@@ -272,7 +350,10 @@ export function EventManager({
                         ]?.label
                       }
                     </p>
-                    <div className="border-t border-brand-100 pt-3 space-y-2">
+                    <form
+                      onSubmit={savePassword}
+                      className="border-t border-brand-100 pt-3 space-y-2"
+                    >
                       <label htmlFor="event-access-password" className="label">
                         Password Acara
                       </label>
@@ -281,9 +362,14 @@ export function EventManager({
                           id="event-access-password"
                           className="input font-mono min-w-0"
                           type={showPassword ? "text" : "password"}
-                          value={selected.access_password}
-                          readOnly
-                          autoComplete="off"
+                          value={passwordDraft}
+                          onChange={(e) => setPasswordDraft(e.target.value)}
+                          required
+                          minLength={8}
+                          maxLength={128}
+                          disabled={busy}
+                          autoComplete="new-password"
+                          aria-describedby="event-password-hint"
                         />
                         <button
                           type="button"
@@ -293,11 +379,25 @@ export function EventManager({
                           {showPassword ? "Sembunyikan" : "Tampilkan"}
                         </button>
                       </div>
-                      <p className="text-xs text-ink-500">
-                        Bagikan password ini hanya kepada user dalam whitelist
-                        event.
+                      <p
+                        id="event-password-hint"
+                        className="text-xs text-ink-500"
+                      >
+                        Ubah password lalu simpan. Gunakan 8–128 karakter,
+                        berbeda dari event lain. User perlu masuk kembali jika
+                        password berubah. Whitelist dan data tamu tetap
+                        tersimpan.
                       </p>
-                    </div>
+                      <button
+                        type="submit"
+                        className="btn-brand w-full sm:w-auto"
+                        disabled={
+                          busy || passwordDraft === selected.access_password
+                        }
+                      >
+                        {busy ? "Menyimpan…" : "Simpan Password"}
+                      </button>
+                    </form>
                   </div>
                   <form
                     onSubmit={(e) => {

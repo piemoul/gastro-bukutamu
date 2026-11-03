@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
 import pg from "pg";
 import ExcelJS from "exceljs";
+import { sealData } from "iron-session";
 
 const target = new URL(process.env.DATABASE_URL);
 assert.equal(
@@ -148,6 +149,22 @@ try {
         400,
     );
   }
+  check(
+    "event creation requires an admin-supplied password",
+    (
+      await request(
+        "POST",
+        "/api/admin/events",
+        {
+          name: "QA Missing Password",
+          address: "Local",
+          starts_at: "2027-03-01T09:30",
+          timezone: "Asia/Jakarta",
+        },
+        adminCookie,
+      )
+    ).status === 400,
+  );
   const created = [];
   for (let i = 0; i < 2; i++) {
     const res = await request(
@@ -155,6 +172,7 @@ try {
       "/api/admin/events",
       {
         name: "QA Local " + suffix,
+        password: `QA-Initial-${i}-${suffix}`,
         address: "Jl. Uji Lokal No. 1",
         starts_at: "2027-03-01T09:30",
         timezone: "Asia/Makassar",
@@ -167,11 +185,33 @@ try {
     created.push(data.event);
   }
   const [first, second] = created;
+  const countBeforeDuplicate = (
+    await db.query("SELECT count(*)::int AS n FROM events")
+  ).rows[0].n;
+  const duplicateCreate = await request(
+    "POST",
+    "/api/admin/events",
+    {
+      name: "Duplicate QA",
+      address: "Local",
+      starts_at: "2027-03-01T09:30",
+      timezone: "Asia/Jakarta",
+      password: first.access_password,
+    },
+    adminCookie,
+  );
   check(
-    "unique event code and automatic password",
+    "duplicate password rejected on create without orphan event",
+    duplicateCreate.status === 409 &&
+      (await db.query("SELECT count(*)::int AS n FROM events")).rows[0].n ===
+        countBeforeDuplicate,
+  );
+
+  check(
+    "unique event code and admin-chosen password",
     first.code !== second.code &&
       first.access_password !== second.access_password &&
-      first.access_password.length >= 16,
+      first.access_password === `QA-Initial-0-${suffix}`,
   );
   const stored = (
     await db.query(
@@ -274,9 +314,33 @@ try {
         )
       ).rows[0].n === 3,
   );
-  const cookie = await login(qaEmails[0].toUpperCase(), first.access_password);
+  let cookie = await login(qaEmails[0].toUpperCase(), first.access_password);
   const otherCookie = await login(qaEmails[1], first.access_password);
   check("whitelisted new user can log in", Boolean(cookie));
+  const qaUserId = (
+    await db.query("SELECT id FROM users WHERE email=$1", [qaEmails[0]])
+  ).rows[0].id;
+  const oldFormat = await sealData(
+    {
+      userId: qaUserId,
+      role: "sales",
+      eventCode: first.code,
+      email: qaEmails[0],
+    },
+    { password: process.env.SESSION_SECRET },
+  );
+  check(
+    "pre-update event sessions require a fresh login",
+    (
+      await request(
+        "GET",
+        "/api/clients",
+        undefined,
+        "gastro_session=" + oldFormat,
+      )
+    ).status === 401,
+  );
+
   await login(qaEmails[0], process.env.NFH_EVENT_PASSWORD, 401);
   check("new event user cannot access legacy events", true);
   const guest = {
@@ -398,6 +462,153 @@ try {
   check(
     "custom event admin XLSX preserves separate user sheets",
     exported.status === 200 && workbook.worksheets.length === 3,
+  );
+  const passwordPath = "/api/admin/events/" + first.code + "/password";
+  check(
+    "anonymous password update denied",
+    (await request("PATCH", passwordPath, { password: "QA-New-" + suffix }))
+      .status === 401,
+  );
+  check(
+    "sales password update denied",
+    (
+      await request(
+        "PATCH",
+        passwordPath,
+        { password: "QA-New-" + suffix },
+        cookie,
+      )
+    ).status === 401,
+  );
+  check(
+    "legacy event password cannot be changed via managed API",
+    (
+      await request(
+        "PATCH",
+        "/api/admin/events/NFH/password",
+        { password: "QA-New-" + suffix },
+        adminCookie,
+      )
+    ).status === 404,
+  );
+  for (const body of [
+    null,
+    {},
+    { password: 42 },
+    { password: "short" },
+    { password: " ".repeat(10) },
+    { password: " padded-valid-password " },
+    { password: "x".repeat(129) },
+  ]) {
+    check(
+      "invalid password update rejected",
+      (await request("PATCH", passwordPath, body, adminCookie)).status === 400,
+    );
+  }
+  const beforePasswordChange = (
+    await db.query(
+      "SELECT e.event_password,m.password_hash FROM events e JOIN managed_events m ON m.event_code=e.code WHERE e.code=$1",
+      [first.code],
+    )
+  ).rows[0];
+  check(
+    "duplicate managed password rejected on update",
+    (
+      await request(
+        "PATCH",
+        passwordPath,
+        { password: second.access_password },
+        adminCookie,
+      )
+    ).status === 409,
+  );
+  check(
+    "legacy env password rejected on update",
+    (
+      await request(
+        "PATCH",
+        passwordPath,
+        { password: process.env.NFH_EVENT_PASSWORD },
+        adminCookie,
+      )
+    ).status === 409,
+  );
+  const afterFailedChanges = (
+    await db.query(
+      "SELECT e.event_password,m.password_hash FROM events e JOIN managed_events m ON m.event_code=e.code WHERE e.code=$1",
+      [first.code],
+    )
+  ).rows[0];
+  check(
+    "failed updates preserve both password representations",
+    JSON.stringify(beforePasswordChange) === JSON.stringify(afterFailedChanges),
+  );
+  const oldPassword = first.access_password;
+  first.access_password = "QA-Rotated-" + suffix;
+  const savedPassword = await request(
+    "PATCH",
+    passwordPath,
+    { password: first.access_password },
+    adminCookie,
+  );
+  check("admin password update succeeds", savedPassword.status === 200);
+  const passwordStored = (
+    await db.query(
+      "SELECT e.event_password,m.password_hash FROM events e JOIN managed_events m ON m.event_code=e.code WHERE e.code=$1",
+      [first.code],
+    )
+  ).rows[0];
+  check(
+    "password and fingerprint persist atomically",
+    passwordStored.event_password === first.access_password &&
+      passwordStored.password_hash ===
+        createHash("sha256").update(first.access_password).digest("hex"),
+  );
+  check(
+    "password change invalidates active sessions",
+    (await request("GET", "/api/clients", undefined, cookie)).status === 401,
+  );
+  await login(qaEmails[0], oldPassword, 401);
+  check("old password no longer allows login", true);
+  cookie = await login(qaEmails[0], first.access_password);
+  check("new password allows whitelisted login", Boolean(cookie));
+  const reloadPasswords = await request(
+    "GET",
+    "/api/admin/events",
+    undefined,
+    adminCookie,
+  );
+  check(
+    "password survives authoritative reload",
+    (await reloadPasswords.json()).events.find(
+      (event) => event.code === first.code,
+    ).access_password === first.access_password,
+  );
+  check(
+    "whitelist and guests unchanged by password change",
+    (
+      await db.query(
+        "SELECT count(*)::int AS n FROM event_whitelist WHERE event_code=$1",
+        [first.code],
+      )
+    ).rows[0].n === 3 &&
+      (
+        await db.query(
+          "SELECT count(*)::int AS n FROM clients WHERE event_code=$1",
+          [first.code],
+        )
+      ).rows[0].n === 2,
+  );
+  const repeatPassword = await request(
+    "PATCH",
+    passwordPath,
+    { password: first.access_password },
+    adminCookie,
+  );
+  check(
+    "saving unchanged password keeps current sessions",
+    repeatPassword.status === 200 &&
+      (await request("GET", "/api/clients", undefined, cookie)).status === 200,
   );
   check(
     "invalid event filter rejected",

@@ -111,8 +111,8 @@ akun, event lain, dan data tamu tidak diubah. Aman dijalankan ulang.
 
 Pada sidebar admin, buka **Event & Akses User**:
 
-1. Isi judul, alamat, tanggal/jam, serta zona waktu (WIB/WITA/WIT), lalu simpan.
-2. Password acara dibuat otomatis. Gunakan tombol **Tampilkan** untuk membagikannya kepada user.
+1. Isi judul, alamat, tanggal/jam, zona waktu (WIB/WITA/WIT), dan password akses yang ditentukan admin, lalu simpan.
+2. Gunakan password 8–128 karakter, tanpa spasi di awal/akhir, dan berbeda dari event lain (termasuk NFH/FHI/BALI). Tombol **Tampilkan** membantu memeriksa password sebelum dibagikan.
 3. Pilih event dan tambahkan email user; beberapa email dapat dipisahkan dengan baris baru atau koma.
 4. User masuk melalui halaman login yang sama dengan email dan password acara.
 
@@ -122,6 +122,18 @@ mengubah nama, area, peran, atau passwordnya. Akun admin tidak dikonversi menjad
 User yang dibuat lewat whitelist hanya dapat memakai event barunya, tidak otomatis
 mendapat akses NFH/FHI/BALI. Penghapusan email dari whitelist langsung menghentikan
 akses event, termasuk sesi yang masih terbuka.
+
+Untuk mengganti password, pilih event pada **Event yang Dikelola**, edit kolom
+**Password Acara**, lalu klik **Simpan Password**. Password baru baru berlaku
+setelah berhasil disimpan. Perubahan memperbarui password dan sidik aksesnya
+dalam satu transaksi; password lama dan sesi event yang memakai password lama
+tidak berlaku lagi. Whitelist serta data tamu tetap tersimpan.
+
+Event yang sebelumnya mendapat password otomatis tetap memakai password lamanya
+sampai admin menyimpan penggantian. Revisi pengaturan password ini tidak memerlukan
+variabel env atau migrasi schema tambahan. User event baru yang sesinya dibuat
+sebelum revisi ini perlu login ulang sekali; sesi admin dan sales NFH/FHI/BALI
+tetap memakai alur yang ada.
 
 Akses NFH/FHI/BALI untuk akun sales lama tetap memakai konfigurasi password acara
 yang sudah ada. Filter admin dan ekspor XLSX mendukung event lama maupun event baru.

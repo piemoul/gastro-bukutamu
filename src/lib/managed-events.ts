@@ -2,9 +2,11 @@ import { createHash, randomBytes } from "node:crypto";
 import { sql } from "./db";
 import {
   parseEventInput,
+  parseEventPassword,
   parseWhitelistEmails,
   EventInputError,
 } from "./event-input";
+import { getEventPasswords } from "./passwords";
 
 export interface EventOption {
   code: string;
@@ -21,8 +23,27 @@ export interface ManagedEvent extends EventOption {
 export function isManagedEventCode(code?: string) {
   return code?.startsWith("EVT_") ?? false;
 }
-const digest = (password: string) =>
+export const eventPasswordFingerprint = (password: string) =>
   createHash("sha256").update(password).digest("hex");
+
+function checkLegacyPassword(password: string) {
+  if (Object.values(getEventPasswords()).includes(password)) {
+    throw new EventInputError(
+      "Password sudah digunakan oleh event lain. Gunakan password yang berbeda.",
+      409,
+    );
+  }
+}
+
+function handlePasswordConflict(error: unknown): never {
+  if ((error as { code?: string })?.code === "23505") {
+    throw new EventInputError(
+      "Password sudah digunakan oleh event lain. Gunakan password yang berbeda.",
+      409,
+    );
+  }
+  throw error;
+}
 
 export async function getEventOptions(): Promise<EventOption[]> {
   return (await sql`SELECT code, name FROM events ORDER BY code`) as EventOption[];
@@ -43,12 +64,17 @@ export async function listManagedEvents(): Promise<ManagedEvent[]> {
 export async function createManagedEvent(body: unknown, adminId: number) {
   const input = parseEventInput(body);
   const code = "EVT_" + randomBytes(12).toString("hex").toUpperCase();
-  const password = "GT-" + randomBytes(12).toString("base64url");
-  await sql.transaction([
-    sql`INSERT INTO events (code, name, event_password) VALUES (${code}, ${input.name}, ${password})`,
-    sql`INSERT INTO managed_events (event_code, address, starts_at, timezone, password_hash, created_by)
-        VALUES (${code}, ${input.address}, ${input.startsAt}, ${input.timezone}, ${digest(password)}, ${adminId})`,
-  ]);
+  const password = input.password;
+  checkLegacyPassword(password);
+  try {
+    await sql.transaction([
+      sql`INSERT INTO events (code, name, event_password) VALUES (${code}, ${input.name}, ${password})`,
+      sql`INSERT INTO managed_events (event_code, address, starts_at, timezone, password_hash, created_by)
+        VALUES (${code}, ${input.address}, ${input.startsAt}, ${input.timezone}, ${eventPasswordFingerprint(password)}, ${adminId})`,
+    ]);
+  } catch (error) {
+    handlePasswordConflict(error);
+  }
   return {
     code,
     name: input.name,
@@ -58,6 +84,24 @@ export async function createManagedEvent(body: unknown, adminId: number) {
     access_password: password,
     whitelist: [],
   } satisfies ManagedEvent;
+}
+
+export async function updateManagedEventPassword(code: string, body: unknown) {
+  const password = parseEventPassword(body);
+  checkLegacyPassword(password);
+  try {
+    // The unique fingerprint prevents ambiguous event selection at login.
+    // Both password representations change together or neither changes.
+    const [updated] = await sql.transaction([
+      sql`UPDATE managed_events SET password_hash = ${eventPasswordFingerprint(password)}
+          WHERE event_code = ${code} RETURNING event_code`,
+      sql`UPDATE events SET event_password = ${password} WHERE code = ${code}
+          AND EXISTS (SELECT 1 FROM managed_events WHERE event_code = ${code})`,
+    ]);
+    return updated.length > 0;
+  } catch (error) {
+    handlePasswordConflict(error);
+  }
 }
 
 export async function hasManagedEvent(code: string) {
@@ -98,15 +142,21 @@ export async function resolveManagedEvent(
 ): Promise<string | null> {
   const rows = await sql`
     SELECT m.event_code FROM managed_events m JOIN event_whitelist w ON w.event_code = m.event_code
-    WHERE m.password_hash = ${digest(password)} AND w.email = ${email.trim().toLowerCase()}
+    WHERE m.password_hash = ${eventPasswordFingerprint(password)} AND w.email = ${email.trim().toLowerCase()}
   `;
   return (rows[0]?.event_code as string | undefined) ?? null;
 }
 
-export async function canUseManagedEvent(userId: number, code: string) {
+export async function canUseManagedEvent(
+  userId: number,
+  code: string,
+  passwordFingerprint?: string,
+) {
   const rows = await sql`
     SELECT 1 FROM event_whitelist w JOIN users u ON lower(u.email) = w.email
+    JOIN managed_events m ON m.event_code = w.event_code
     WHERE u.id = ${userId} AND w.event_code = ${code} AND u.role = 'sales'
+      AND m.password_hash = ${passwordFingerprint ?? ""}
   `;
   return rows.length > 0;
 }

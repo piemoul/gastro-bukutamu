@@ -28,8 +28,8 @@
     "hash": "779a6a8a2efa2cfcf249512e14fbfaa7"
   },
   "src/app/api/auth/login/route.ts": {
-    "mtime": 1793610957221.9592,
-    "hash": "a557bd00c31245d11e77d59607798045"
+    "mtime": 1793680373707.0276,
+    "hash": "dbeef35f9f128ec313e7ab50777797ec"
   },
   "src/app/api/auth/logout/route.ts": {
     "mtime": 1793610957223.4666,
@@ -72,8 +72,8 @@
     "hash": "3b815cbaeebafe34ed250e2c1bcd893d"
   },
   "src/lib/auth.ts": {
-    "mtime": 1793613993682.7063,
-    "hash": "6d0f397695d4cf591c429845c2eda809"
+    "mtime": 1793680373682.9343,
+    "hash": "cfead8eb91f0de127dc8dd00f0ae13ef"
   },
   "src/lib/db.ts": {
     "mtime": 1793613364577.4792,
@@ -100,8 +100,8 @@
     "hash": ""
   },
   "README.md": {
-    "mtime": 1793614577776.2405,
-    "hash": "08fa8ac025bd42e154f292d0be1236a8"
+    "mtime": 1793680415864.5027,
+    "hash": "4a7adf332b2d7c7b9f46770d8144102b"
   },
   "migrations/001-managed-events.sql": {
     "mtime": 1793613993678.1711,
@@ -124,40 +124,40 @@
     "hash": "5830a42c80e007ea57f55d8a3ac42293"
   },
   "scripts/local/verify.mjs": {
-    "mtime": 1793614379668.626,
-    "hash": "a62781e7a420090f0e03f57172c4c613"
+    "mtime": 1793680717602.2065,
+    "hash": "0cf2273b866a9f652b918f34b11c42a5"
   },
   "scripts/migrate.mjs": {
     "mtime": 1793614379698.7446,
     "hash": "605ca25c5e0aa71b223f4a32ece0853d"
   },
   "src/app/admin/EventManager.tsx": {
-    "mtime": 1793614379468.4717,
-    "hash": "d4a27a9b9bb0d78fdc89c3f4f04a64ec"
+    "mtime": 1793680373791.4946,
+    "hash": "fd9294fae31679ff0cd64c52b214bbd7"
   },
   "src/app/api/admin/events/[code]/whitelist/route.ts": {
     "mtime": 1793614379530.7292,
     "hash": "80f9730093343b7e82a0ea593642cbf4"
   },
   "src/app/api/admin/events/route.ts": {
-    "mtime": 1793614379517.6072,
-    "hash": "53864b13e0d38b6a97b52abb4b8c7e97"
+    "mtime": 1793680373720.1382,
+    "hash": "e68526974decc926d599f77817382b4e"
   },
   "src/components/WorkspaceShell.tsx": {
     "mtime": 1793614379341.6174,
     "hash": "87b21ffbbdb9d29b52bd73bc1d791dd4"
   },
   "src/lib/event-input.ts": {
-    "mtime": 1793614379503.9954,
-    "hash": "f5dec60cdf639e0aaea19a987d879fec"
+    "mtime": 1793680373611.9011,
+    "hash": "b1abb0b5d5e5f6d223f323a3c0f11d37"
   },
   "src/lib/managed-events.ts": {
-    "mtime": 1793614379491.895,
-    "hash": "aad69ca200b454229c8dd9378f22ae8f"
+    "mtime": 1793680373649.9392,
+    "hash": "e640fb49a96c26db324bbf2c5eabe655"
   },
   "DEPLOYMENT.local.md": {
-    "mtime": 1793614578685.1377,
-    "hash": "cb3c90b9c3d315a30f033b55c3811475"
+    "mtime": 1793680748632.2903,
+    "hash": "89bbf87da1adff257475f801fc375352"
   },
   "compose.yaml": {
     "mtime": 1793613539931.115,
@@ -178,5 +178,17 @@
   "src/components/Pagination.tsx": {
     "mtime": 1793614866059.9473,
     "hash": "3c28a7ebededf7e7235d87d00066f7be"
+  },
+  "docs/deployment/check-existing-data.sql": {
+    "mtime": 1793617421651.9163,
+    "hash": "e16ea86b7567632c5e78bfe4840b5465"
+  },
+  "src/app/api/admin/events/[code]/password/route.ts": {
+    "mtime": 1793680373732.2239,
+    "hash": "4558d158a547d11fb237be257cabe175"
+  },
+  "docs/DEPLOY-LIVE-KO-INDRA.md": {
+    "mtime": 1793680415865.5,
+    "hash": "873810ccc6948cd60277088d573d3c85"
   }
 }

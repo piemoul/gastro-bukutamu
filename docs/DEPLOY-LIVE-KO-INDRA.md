@@ -10,6 +10,13 @@ Ambil `main` terbaru yang sudah memuat panduan ini, lalu catat SHA checkout untu
 berita deployment. Perubahan fitur mencakup event admin, whitelist per event,
 tampilan WMS/Intranet, label event mobile, serta paginasi customer.
 
+Revisi password admin terdapat pada `main` setelah rilis dasar tersebut. Ambil
+HEAD terbaru, bukan checkout rilis dasar saja. Admin kini mengisi password sendiri
+saat membuat event dan dapat menggantinya pada event yang sudah ada. Revisi ini
+tidak menambah env atau migrasi schema. Password event lama tidak ditulis ulang
+saat deployment. User event baru dengan sesi dari versi sebelumnya perlu login
+ulang sekali; sesi admin dan sales event bawaan tidak terpengaruh.
+
 **Urutan rilis:** backup dan baseline data -> siapkan env production -> migrasi
 tambahan -> bandingkan data lama -> deploy tanpa mengalihkan domain -> verifikasi
 -> alihkan domain live.
@@ -202,6 +209,11 @@ Pada URL deployment unik tersebut, periksa tanpa menambah data dummy production:
 - ekspor XLSX pribadi/gabungan dan pemisahan tab salesman;
 - login sales lama memakai password acara yang sama;
 - menu **Event & Akses User**, form judul/alamat/waktu, tampilan mobile, dan paginasi.
+
+Pada staging/database terpisah, periksa pula pembuatan event dengan password
+pilihan admin dan pergantian **Password Acara -> Simpan Password**. Pastikan
+password lama tidak bisa dipakai, sesi lama diminta login ulang, password baru
+berfungsi bagi email whitelist, dan data tamu serta whitelist tidak berubah.
 
 Uji penambahan event/whitelist dan CRUD dengan data dummy dilakukan di staging
 dengan database terpisah. Deployment unik Production di atas tetap membaca

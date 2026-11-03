@@ -4,7 +4,34 @@ export const EVENT_TIMEZONES = {
   "Asia/Jayapura": { label: "WIT", offset: "+09:00" },
 } as const;
 
-export class EventInputError extends Error {}
+export class EventInputError extends Error {
+  constructor(
+    message: string,
+    public readonly status = 400,
+  ) {
+    super(message);
+  }
+}
+
+export function parseEventPassword(body: unknown): string {
+  const password =
+    body && typeof body === "object"
+      ? (body as Record<string, unknown>).password
+      : undefined;
+  if (
+    typeof password !== "string" ||
+    password.length < 8 ||
+    password.length > 128
+  ) {
+    throw new EventInputError("Password acara wajib diisi, 8–128 karakter.");
+  }
+  if (password !== password.trim()) {
+    throw new EventInputError(
+      "Password acara tidak boleh diawali atau diakhiri spasi.",
+    );
+  }
+  return password;
+}
 
 export function parseEventInput(body: unknown) {
   if (!body || typeof body !== "object")
@@ -40,6 +67,7 @@ export function parseEventInput(body: unknown) {
     address,
     startsAt: new Date(startsAt + ":00" + offset).toISOString(),
     timezone,
+    password: parseEventPassword(body),
   };
 }
 

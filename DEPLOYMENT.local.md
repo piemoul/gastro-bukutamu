@@ -35,7 +35,7 @@ Neon/Vercel, ikuti perintah `npm run migrate` pada README sebelum deployment.
 
 ## Verifikasi
 
-Build produksi dan TypeScript lulus. Sebanyak 50 pemeriksaan integrasi mencakup
+Build produksi dan TypeScript lulus. Sebanyak 74 pemeriksaan integrasi mencakup
 login lama, event baru, validasi form, whitelist, isolasi event/user, pencabutan
 akses sesi, filter dinamis, ekspor XLSX, dan regresi CRUD tamu. Setelah pembersihan,
 seluruh baris awal serta kredensial dibandingkan dan tetap sama.
@@ -43,3 +43,11 @@ seluruh baris awal serta kredensial dibandingkan dan tetap sama.
 Browser membuktikan simpan event dan whitelist lalu reload, tambah/edit tamu
 lalu reload, pencarian, paginasi, serta tampilan desktop dan ponsel 320/390px.
 Bukti screenshot lokal disimpan pada `.local-deployment/` dan tidak dipublikasikan.
+
+## Revisi pengaturan password event
+
+Admin menentukan password akses saat membuat event dan dapat menggantinya pada
+event yang sudah dibuat melalui tombol Simpan Password. Password 8-128 karakter
+harus berbeda antar-event. Penggantian dilakukan atomik tanpa mengubah whitelist
+atau data tamu, dan sesi yang memakai password lama perlu login kembali.
+Tidak ada migrasi schema atau variabel environment tambahan untuk revisi ini.
